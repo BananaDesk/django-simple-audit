@@ -26,7 +26,7 @@ class Pizza(models.Model):
     @staticmethod
     def set_friendly_description(audit):
         """
-        Return a friendly description depending of which fields has
+        Set friendly description depending of which fields has
         been changed
         TODO:
             Improve translation
@@ -39,8 +39,8 @@ class Pizza(models.Model):
             }
 
         def _change(audit):
-            _("home %(name)s pizza")
-            _("buy %(name)s")
+            _("Change %(name)s pizza")
+            _("Foo's %(name)s")
 
             # option 1 - fields changed "name"
             options = [
