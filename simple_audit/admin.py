@@ -39,7 +39,7 @@ class ContentTypeListFilter(SimpleListFilter):
 
 class AuditAdmin(admin.ModelAdmin):
     search_fields = ("audit_request__user__username", "description", "audit_request__request_id", "obj_description", )
-    list_display = ("format_date", "audit_content", "operation", "audit_user", "audit_description", )
+    list_display = ("format_date", "audit_content", "operation", "audit_user", "audit_description", "friendly_description", "friendly_description_vars")
     list_filter = ("operation", ContentTypeListFilter,)
 
     def format_date(self, obj):
@@ -73,7 +73,7 @@ class AuditAdmin(admin.ModelAdmin):
         else:
             return u"%s" \
                 % (_("unknown"))
-            
+
     audit_user.admin_order_field = "audit_request__user"
     audit_user.short_description = _("User")
     audit_user.allow_tags = True

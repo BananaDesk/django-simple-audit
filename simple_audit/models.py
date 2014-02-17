@@ -4,6 +4,7 @@ import logging
 import threading
 import uuid
 
+from json_field import JSONField
 from django.conf import settings
 from django.db import models
 from .managers import AuditManager
@@ -39,13 +40,29 @@ class Audit(models.Model):
         (DELETE, _('delete'))
     )
     date = models.DateTimeField(auto_now_add=True, verbose_name=_("Date"))
-    operation = models.PositiveIntegerField(max_length=255, choices=OPERATION_CHOICES, verbose_name=_('Operation'))
+    operation = models.PositiveIntegerField(
+        max_length=255,
+        choices=OPERATION_CHOICES,
+        verbose_name=_('Operation')
+    )
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     audit_request = models.ForeignKey("AuditRequest", null=True)
     description = models.TextField()
-    obj_description = models.CharField(max_length=100, db_index=True, null=True, blank=True)
+    obj_description = models.CharField(
+        max_length=100,
+        db_index=True,
+        null=True,
+        blank=True
+    )
+    friendly_description = models.CharField(
+        max_length=200,
+        db_index=True,
+        null=True,
+        blank=True
+    )
+    friendly_description_vars = JSONField()
 
     objects = AuditManager()
 
@@ -103,15 +120,17 @@ class AuditRequest(models.Model):
     @staticmethod
     def new_request(path, user, ip):
         """
-        Create a new request from a path, user and ip and put it on thread context.
-        The new request should not be saved until first use or calling method current_request(True)
+        Create a new request from a path, user and ip and put it on
+        thread context.  The new request should not be saved until
+        first use or calling method current_request(True)
         """
         audit_request = AuditRequest()
         audit_request.ip = ip
         audit_request.user = user
         audit_request.path = path
         audit_request.request_id = uuid.uuid4().hex
-        while AuditRequest.objects.filter(request_id=audit_request.request_id).exists():
+        while AuditRequest.objects.filter(
+                request_id=audit_request.request_id).exists():
             audit_request.request_id = uuid.uuid4().hex
 
         AuditRequest.THREAD_LOCAL.current = audit_request
@@ -119,8 +138,10 @@ class AuditRequest(models.Model):
 
     @staticmethod
     def set_request_from_id(request_id):
-        """ Load an old request from database and put it again in thread context. If request_id doesn't
-        exist, thread context will be cleared """
+        """
+        Load an old request from database and put it again in thread context.
+        If request_id doesn't exist, thread context will be cleared
+        """
         audit_request = None
         if request_id is not None:
             try:
@@ -132,11 +153,14 @@ class AuditRequest(models.Model):
 
     @staticmethod
     def current_request(force_save=False):
-        """ Get current request from thread context (or None doesn't exist). If you specify force_save,
-        current request will be saved on database first.
+        """
+        Get current request from thread context (or None doesn't exist).
+        If you specify force_save, current request will be saved
+        on database first.
         """
         audit_request = getattr(AuditRequest.THREAD_LOCAL, 'current', None)
-        if force_save and audit_request is not None and audit_request.pk is None:
+        if force_save and audit_request is not None \
+                and audit_request.pk is None:
             audit_request.save()
         return audit_request
 

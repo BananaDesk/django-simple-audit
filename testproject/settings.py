@@ -138,6 +138,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'simple_app',
+    'json_field',
     'simple_audit',
     'django_extensions',
 )
@@ -191,4 +192,3 @@ LOGGING = {
 }
 
 DJANGO_SIMPLE_AUDIT_ACTIVATED = True
-DJANGO_SIMPLE_AUDIT_M2M_FIELDS = True
